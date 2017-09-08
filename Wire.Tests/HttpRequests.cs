@@ -35,6 +35,14 @@ namespace Wire.Tests
             Assert.IsTrue(JsonConvert.SerializeObject(expected) == JsonConvert.SerializeObject(response));
         }
 
+        [TestMethod]
+        public void ChangedBehaviour()
+        {
+            API.GET("/2", x => new { Count = 2 });
+            API._APIBehaviours["GET"].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
+            Assert.IsTrue(true);
+        }
+
         public static object DeserializeFromStream(Stream stream)
         {
             var serializer = new JsonSerializer();
