@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire", "Wire\Wire.csproj", "{24B65379-1C8F-4AF0-A6A8-29CD226B9C80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire.Tests", "Wire.Tests\Wire.Tests.csproj", "{49A11490-75D7-4D82-B8A6-DE505160CF2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire.WebSite", "Wire.WebSite\Wire.WebSite.csproj", "{579D5EEF-0EF5-455C-85F5-699B448EBD40}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24B65379-1C8F-4AF0-A6A8-29CD226B9C80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24B65379-1C8F-4AF0-A6A8-29CD226B9C80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24B65379-1C8F-4AF0-A6A8-29CD226B9C80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24B65379-1C8F-4AF0-A6A8-29CD226B9C80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49A11490-75D7-4D82-B8A6-DE505160CF2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49A11490-75D7-4D82-B8A6-DE505160CF2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49A11490-75D7-4D82-B8A6-DE505160CF2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49A11490-75D7-4D82-B8A6-DE505160CF2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{579D5EEF-0EF5-455C-85F5-699B448EBD40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{579D5EEF-0EF5-455C-85F5-699B448EBD40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{579D5EEF-0EF5-455C-85F5-699B448EBD40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{579D5EEF-0EF5-455C-85F5-699B448EBD40}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {91876415-83C3-450A-8A0A-80B9C347128C}
+	EndGlobalSection
+EndGlobal
