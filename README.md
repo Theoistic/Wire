@@ -1,5 +1,7 @@
 # Wire
 
+[![Build status](https://ci.appveyor.com/api/projects/status/2e55pfc8xbehpg33?svg=true)](https://ci.appveyor.com/project/SperoSophia/wire)
+
 Wire is a quick, easy & extremely light-weight WebAPI framework. As an alternative to ASP.NET MVC, NancyFx, Nina, Sinatra and others. .NET based ofc.
 
 ## Code Example
