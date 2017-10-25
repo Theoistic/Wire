@@ -26,8 +26,6 @@ namespace Wire.WebSite
             }
 
             app.UseWire();
-
-            API.GET("/info/{message}", x => new { Message = $"cannot find {x.Parameters["message"]}" }, x => x.Parameters["message"] as string == "lol");
         }
     }
 }

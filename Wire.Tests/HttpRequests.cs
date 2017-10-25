@@ -39,7 +39,7 @@ namespace Wire.Tests
         public void ChangedBehaviour()
         {
             API.GET("/2", x => new { Count = 2 });
-            API._APIBehaviours["GET"].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
+            API.Behaviours[HttpMethod.GET].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
             Assert.IsTrue(true);
         }
 
