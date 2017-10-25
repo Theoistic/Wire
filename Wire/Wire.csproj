@@ -10,6 +10,7 @@
     <PackageProjectUrl>https://github.com/SperoSophia/Wire</PackageProjectUrl>
     <RepositoryUrl>https://github.com/SperoSophia/Wire</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
+    <PackageId>Wire.NET</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
