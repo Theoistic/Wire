@@ -2,6 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>Theodor Solbjorg</Authors>
+    <Company>SperoSophia</Company>
+    <Description>Wire is a quick, easy &amp; extremely light-weight WebAPI framework. As an alternative to ASP.NET MVC, NancyFx, Nina, Sinatra and others.</Description>
+    <Copyright />
+    <PackageProjectUrl>https://github.com/SperoSophia/Wire</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SperoSophia/Wire</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
