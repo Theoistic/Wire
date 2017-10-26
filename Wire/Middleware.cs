@@ -37,7 +37,10 @@ namespace Wire
 
         private static void RegisterAllZones()
         {
-            IEnumerable<Type> types = Assembly.GetEntryAssembly().GetAllTypesWithAttribute<APIModuleAttribute>();
+            List<Type> types = new List<Type>();
+            types.AddUnique(Assembly.GetEntryAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
+            types.AddUnique(Assembly.GetCallingAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
+            types.AddUnique(Assembly.GetExecutingAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
             foreach (Type t in types)
             {
                 Activator.CreateInstance(t);
