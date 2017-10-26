@@ -4,13 +4,33 @@
 
 Wire is a quick, easy & extremely light-weight WebAPI framework. As an alternative to ASP.NET MVC, NancyFx, Nina, Sinatra and others. .NET based ofc.
 
-## Code Example
+## Setup
 
 ```cs
-API.GET("/info/{message}", x => new { Message = "OK" });
+PM> Install-Package Wire.NET -Version 0.2.0
 ```
 
+
+## Code Example
+
+Wire Supports all the standard http requests, GET, POST, PUT, DELETE, OPTIONS, PATCH. and setting up a request is fast too.
+```cs
+API.GET("/info/{message}", x => new { Message = x.Parameters.message });
+```
+so in the example of http://localhost/info/OK
 would return a json reponse as { Message: "OK" }
+
+
+```cs
+API.POST("/blog/post", x => BlogRepository.Save(x.Body.As<Post>()));
+```
+Save the body of the post to your post repositoty in this instance.
+
+
+```cs
+API.GET("/blog/posts", x => MyBlogPosts.Where(y => y.name.contains(x.QueryString["q"]))));
+```
+If were need to filter something out. in the case of http://localhost/blog/posts?q=first
 
 ## Motivation
 
@@ -29,7 +49,7 @@ for(int i = 0; i < 10; i++) {
 And later...
 
 ```cs
-API._APIBehaviours["GET"].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
+API.Behaviours[HttpMethod.GET].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
 ```
 
-If one wanted to. (will clean up the API alot, still prototyping.)
+If one wanted to.
