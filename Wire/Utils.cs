@@ -73,5 +73,10 @@ namespace Wire
         {
             return (self as IDictionary<string, object>).ContainsKey(property);
         }
+
+        public static T TryGetValue<T>(this ExpandoObject self, string property)
+        {
+            return self.HasValue(property) ? (self as IDictionary<string, T>)[property] : default(T);
+        }
     }
 }
