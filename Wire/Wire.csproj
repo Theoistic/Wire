@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/SperoSophia/Wire</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
     <PackageId>Wire.NET</PackageId>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageLicenseUrl>https://raw.githubusercontent.com/SperoSophia/Wire/master/LICENSE</PackageLicenseUrl>
     <AssemblyVersion>0.2.0.0</AssemblyVersion>
