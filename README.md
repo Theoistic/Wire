@@ -1,8 +1,8 @@
-# Wire
+# Wire <img src="https://raw.githubusercontent.com/SperoSophia/Wire/master/icon.png" width="24"> 
+
 
 [![Build status](https://ci.appveyor.com/api/projects/status/2e55pfc8xbehpg33?svg=true)](https://ci.appveyor.com/project/SperoSophia/wire)
 [![nuget](https://img.shields.io/nuget/v/Wire.NET.svg)](https://www.nuget.org/packages/Wire.NET/)
-
 
 Wire is a quick, easy & extremely light-weight WebAPI framework. As an alternative to ASP.NET MVC, NancyFx, Nina, Sinatra and others. .NET based ofc.
 
