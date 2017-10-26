@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http.Internal;
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -66,6 +67,11 @@ namespace Wire
                 rc[Uri.UnescapeDataString(row.Substring(0, index))] = Uri.UnescapeDataString(row.Substring(index + 1)); // use Unescape only parts          
             }
             return rc;
+        }
+
+        public static bool HasValue(this ExpandoObject self, string property)
+        {
+            return (self as IDictionary<string, object>).ContainsKey(property);
         }
     }
 }

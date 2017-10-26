@@ -24,7 +24,6 @@ namespace Wire
 
     public class Context
     {
-        //private IDictionary<string, object> Parameters { get; set; }
         public dynamic Parameters { get; internal set; }
         public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.Value.ParseQueryString();
         public HttpContext HttpContext { get; set; }
@@ -34,21 +33,9 @@ namespace Wire
     public class ContextBody
     {
         private string _body { get; set; }
-
-        public ContextBody(string body)
-        {
-            _body = body;
-        }
-
-        public override string ToString()
-        {
-            return _body;
-        }
-
-        public T As<T>() where T : class
-        {
-            return JsonConvert.DeserializeObject<T>(_body);
-        }
+        public ContextBody(string body) => _body = body;
+        public override string ToString() => _body;
+        public T As<T>() where T : class => JsonConvert.DeserializeObject<T>(_body);
     }
 
     public class APIBehaviours : List<APIBehaviour>
@@ -65,7 +52,6 @@ namespace Wire
 
         public void Add(string path, Func<Context, object> function, Func<Context, bool> condition = null) => Add(new APIBehaviour { Uri = new UriTemplate(path), Function = function, Condition = condition });
 
-        // remove before inserting an identical method and uri.
         public new void Add(APIBehaviour item)
         {
             Predicate<APIBehaviour> _match = x => x.Uri == item.Uri && x.Method == item.Method;
@@ -78,12 +64,6 @@ namespace Wire
                 base.Add(item);
             }
         }
-
-    }
-
-    public class APIBehaviourZone : APIBehaviours
-    {
-        public Func<Context, bool> Condition { get; set; }
     }
 
     public static partial class API 
@@ -106,8 +86,6 @@ namespace Wire
 
         public static Uri GetURI(HttpContext context) => new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}");
         public static APIBehaviour Match(HttpContext context) => Behaviours[context.Request.Method.ToUpper().GetHttpMethod()].FindMatch(GetURI(context));
-
-        internal static void IncludeZone(APIBehaviourZone zone) => zone.ForEach(x => Behaviours[x.Method].Add(x));
 
         public static async Task<bool> Resolve(HttpContext httpContext)
         {
