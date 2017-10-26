@@ -24,7 +24,7 @@ namespace Wire.Tests
 
             object expected = new { Message = "OK" };
 
-            API.GET("/info/{firstParam}", x => expected, x => (x.Parameters["firstParam"] as string) == "StandardRequestTest");
+            API.GET("/info/{firstParam}", x => expected, x => x.Parameters.firstParam == "StandardRequestTest");
 
             var processed = API.Resolve(context).Result;
 

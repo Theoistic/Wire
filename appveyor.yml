@@ -6,6 +6,7 @@ build:
   verbosity: minimal
 deploy:
   provider: NuGet
+  server: # needs to be empty
   api_key:
     secure: Phfn3EhEMRaFpr4ixacGKVQzu8m9fsy3tIqjYNNuhvqsd6ZfJ2m1XuE8shKX3ADz
   skip_symbols: false

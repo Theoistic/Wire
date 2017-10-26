@@ -30,7 +30,7 @@ Save the body of the post to your post repositoty in this instance.
 ```cs
 API.GET("/blog/posts", x => MyBlogPosts.Where(y => y.name.contains(x.QueryString["q"]))));
 ```
-If were need to filter something out. in the case of http://localhost/blog/posts?q=first
+If we need to filter something out. in the case of http://localhost/blog/posts?q=first
 
 ## Motivation
 
