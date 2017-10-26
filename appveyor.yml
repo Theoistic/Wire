@@ -9,12 +9,12 @@ artifacts:
   name: NuGet
 deploy:
 - provider: NuGet
-  api_key:
-    secure: Phfn3EhEMRaFpr4ixacGKVQzu8m9fsy3tIqjYNNuhvqsd6ZfJ2m1XuE8shKX3ADz
-  skip_symbols: true
-  artifact: /.*\.nupkg/
+    api_key:
+      secure: Phfn3EhEMRaFpr4ixacGKVQzu8m9fsy3tIqjYNNuhvqsd6ZfJ2m1XuE8shKX3ADz
+    skip_symbols: true
+    artifact: /.*\.nupkg/
 - provider: GitHub
-    artifact: /.*\.nupkg/           # upload all NuGet packages to release assets
+    artifact: NuGet        
     draft: false
     prerelease: false
     on:
