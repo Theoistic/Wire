@@ -4,6 +4,7 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -23,7 +24,9 @@ namespace Wire
 
     public class Context
     {
-        public IDictionary<string, object> Parameters { get; set; }
+        //private IDictionary<string, object> Parameters { get; set; }
+        public dynamic Parameters { get; internal set; }
+        public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.Value.ParseQueryString();
         public HttpContext HttpContext { get; set; }
         public ContextBody Body { get; set; }
     }
@@ -113,10 +116,15 @@ namespace Wire
             {
                 Context context = new Context
                 {
-                    Parameters = behaviour.Uri.GetParameters(API.GetURI(httpContext)),
+                    //Parameters = behaviour.Uri.GetParameters(API.GetURI(httpContext)),
+                    Parameters = new ExpandoObject(),
                     HttpContext = httpContext,
                     Body = new ContextBody(httpContext.GetJsonBody())
                 };
+                var _params = behaviour.Uri.GetParameters(API.GetURI(httpContext));
+                foreach (var _p in _params) {
+                    (context.Parameters as IDictionary<string, object>).Add(_p.Key, _p.Value);
+                }
                 if (behaviour.Condition != null)
                 {
                     if(behaviour.Condition.Invoke(context) == false)

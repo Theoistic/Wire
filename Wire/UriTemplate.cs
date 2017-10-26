@@ -239,8 +239,7 @@ namespace Wire
                 else
                 {
                     // Handle associative arrays
-                    var dictionary = value as IDictionary<string, string>;
-                    if (dictionary != null)
+                    if (value is IDictionary<string, string> dictionary)
                     {
                         if (varSpec.OperatorInfo.Named && !varSpec.Explode)  // exploding will prefix with list name
                         {

@@ -12,6 +12,7 @@ namespace Wire.WebSite
 
         public PostModule()
         {
+            API.GET("/something/{message}", x => $"You said {x.QueryString["rainbow"]} which is okay.");
             API.GET("/post/", x => GET());
             API.POST("/post/", x => Create(x.Body.As<Post>()));
         }

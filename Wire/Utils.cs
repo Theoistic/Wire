@@ -55,5 +55,17 @@ namespace Wire
             }
         }
 
+        public static Dictionary<string, string> ParseQueryString(this string requestQueryString)
+        {
+            Dictionary<string, string> rc = new Dictionary<string, string>();
+            string[] ar1 = requestQueryString.Split(new char[] { '&', '?' });
+            foreach (string row in ar1)
+            {
+                if (string.IsNullOrEmpty(row)) continue;
+                int index = row.IndexOf('=');
+                rc[Uri.UnescapeDataString(row.Substring(0, index))] = Uri.UnescapeDataString(row.Substring(index + 1)); // use Unescape only parts          
+            }
+            return rc;
+        }
     }
 }
