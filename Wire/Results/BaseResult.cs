@@ -7,5 +7,6 @@ namespace Wire
     {
         protected NameValueCollection ResultHeaders;
         public abstract void Execute(HttpContext context);
+        public abstract bool IsExecutionReady { get; }
     }
 }

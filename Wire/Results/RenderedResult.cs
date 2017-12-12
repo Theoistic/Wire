@@ -24,5 +24,7 @@ namespace Wire
                 Render(response.Body, _result);
             }
         }
+
+        public override bool IsExecutionReady => _result != null;
     }
 }

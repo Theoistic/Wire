@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -77,6 +78,15 @@ namespace Wire
         public static T TryGetValue<T>(this ExpandoObject self, string property)
         {
             return self.HasValue(property) ? (self as IDictionary<string, T>)[property] : default(T);
+        }
+
+        public static string TryGetValue(this IHeaderDictionary self, string property)
+        {
+            if(self.TryGetValue(property, out StringValues value))
+            {
+                return value.ToString();
+            }
+            return "";
         }
     }
 }
