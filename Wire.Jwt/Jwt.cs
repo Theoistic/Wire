@@ -8,14 +8,14 @@ namespace Wire.Jwt
 {
     public static class APIJwt
     {
-        public static void AddJwt(this API.APIPlugins self)
+        public static void AddJwt(this API.APIPlugins self, Func<LoginModel, bool> UserValidation)
         {
             API.POST("/token", x =>
             {
                 LoginModel model = x.Body.As<LoginModel>();
 
-                if (model.Username != model.Password)
-                    return new { Error = "Invalid Username" };
+                if (UserValidation(model) == false)
+                    return new { Error = "Invalid credentials" };
 
                 var claims = new Dictionary<string, object> {
                     { "name", model.Username },
@@ -55,7 +55,7 @@ namespace Wire.Jwt
         }
     }
 
-    internal class LoginModel
+    public class LoginModel
     {
         public string Username { get; set; }
         public string Password { get; set; }

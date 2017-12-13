@@ -102,6 +102,9 @@ namespace Wire
             {
                 BaseResult result;
 
+                Type[] MimeResolvers = Assembly.GetAssembly(typeof(API)).GetTypes().Where(x => x.GetCustomAttributes(typeof(AcceptHeaderAttribute), true).Length > 0).ToArray();
+                string[] SupportedMimesTypes = MimeResolvers.Select(x => (x.GetCustomAttribute(typeof(AcceptHeaderAttribute), true) as AcceptHeaderAttribute).Header).ToArray();
+
                 Context context = new Context
                 {
                     Parameters = new ExpandoObject(),
@@ -114,7 +117,7 @@ namespace Wire
                 }
 
                 string[] header = context.HttpContext.Request.Headers.TryGetValue("Accept").Split(',');
-                if (header.Length == 0) {
+                if (SupportedMimesTypes.Intersect(header).Count() == 0) {
                     header = new string[] { "application/json" };
                 }
 
@@ -134,8 +137,7 @@ namespace Wire
 
                 afterRequest.ForEach(x => x.Invoke(context));
 
-                Type BaseResultType = Assembly.GetAssembly(typeof(API)).GetTypes().Where(x => x.GetCustomAttributes(typeof(AcceptHeaderAttribute), true).Length > 0)
-                    .FirstOrDefault(x => header.Contains((x.GetCustomAttribute(typeof(AcceptHeaderAttribute), true) as AcceptHeaderAttribute).Header));
+                Type BaseResultType = MimeResolvers.FirstOrDefault(x => header.Contains((x.GetCustomAttribute(typeof(AcceptHeaderAttribute), true) as AcceptHeaderAttribute).Header));
 
                 if (BaseResultType == null)
                 {
