@@ -9,7 +9,7 @@ Wire is a quick, easy & extremely light-weight WebAPI framework. As an alternati
 ## Setup
 
 ```cs
-PM> Install-Package Wire.NET -Version 0.2.0
+PM> Install-Package Wire.NET
 ```
 
 
