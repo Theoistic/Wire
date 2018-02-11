@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -30,8 +31,15 @@ namespace Wire
 
     public static class WireMiddlewareExtensions
     {
-        public static IApplicationBuilder UseWire(this IApplicationBuilder builder)
+        public static IServiceCollection AddWire(this IServiceCollection services)
         {
+            services.AddDistributedMemoryCache();
+            return services;
+        }
+
+        public static IApplicationBuilder UseWire(this IApplicationBuilder builder, IHostingEnvironment env)
+        {
+            API.env = env;
             RegisterAllZones();
             return builder.UseMiddleware<WireMiddleware>();
         }

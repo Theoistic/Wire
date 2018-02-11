@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
@@ -70,6 +71,8 @@ namespace Wire
 
     public static partial class API 
     {
+        public static IHostingEnvironment env { get; internal set; }
+
         public static Dictionary<HttpMethod, APIBehaviours> Behaviours { get; set; } = new Dictionary<HttpMethod, APIBehaviours>() {
             { HttpMethod.GET, new APIBehaviours() },
             { HttpMethod.POST, new APIBehaviours() },
@@ -79,12 +82,16 @@ namespace Wire
             { HttpMethod.PATCH, new APIBehaviours() }
         };
 
+        public static APIBehaviours Rules { get; private set; } = new APIBehaviours();
+
         public static void GET(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.GET].Add(path, body, condition);
         public static void POST(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.POST].Add(path, body, condition);
         public static void DELETE(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.DELETE].Add(path, body, condition);
         public static void PUT(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PUT].Add(path, body, condition);
         public static void OPTIONS(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
         public static void PATCH(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
+
+        public static void RULE(string path, Func<Context, object> body) => Rules.Add(path, body);
 
 
         internal static List<Action<Context>> beforeRequest = new List<Action<Context>>();
@@ -102,23 +109,55 @@ namespace Wire
             {
                 BaseResult result;
 
-                Type[] MimeResolvers = Assembly.GetAssembly(typeof(API)).GetTypes().Where(x => x.GetCustomAttributes(typeof(AcceptHeaderAttribute), true).Length > 0).ToArray();
-                string[] SupportedMimesTypes = MimeResolvers.Select(x => (x.GetCustomAttribute(typeof(AcceptHeaderAttribute), true) as AcceptHeaderAttribute).Header).ToArray();
-
-                Context context = new Context
+                Func<Context> CreateContext = () =>
                 {
-                    Parameters = new ExpandoObject(),
-                    HttpContext = httpContext,
-                    Body = new ContextBody(httpContext.GetJsonBody())
+                    return new Context
+                    {
+                        Parameters = new ExpandoObject(),
+                        HttpContext = httpContext,
+                        Body = new ContextBody(httpContext.GetJsonBody())
+                    };
                 };
+
+                Context context = CreateContext();
                 var _params = behaviour.Uri.GetParameters(API.GetURI(httpContext));
                 foreach (var _p in _params) {
                     (context.Parameters as IDictionary<string, object>).Add(_p.Key, _p.Value);
                 }
 
-                string[] header = context.HttpContext.Request.Headers.TryGetValue("Accept").Split(',');
-                if (SupportedMimesTypes.Intersect(header).Count() == 0) {
-                    header = new string[] { "application/json" };
+                Action<object> deliverResult = (givenResult) => {
+                    if (givenResult is BaseResult)
+                    {
+                        Type typeOfResult = givenResult.GetType();
+                        (givenResult as BaseResult).Execute(httpContext);
+                    }
+                    else
+                    {
+                        result = new JsonResult(givenResult);
+                        result.Execute(httpContext);
+                    }
+                };
+
+                try
+                {
+                    List<object> RuleResults = new List<object>();
+                    Rules.FindMatchs(API.GetURI(httpContext)).ForEach(x =>
+                    {
+                        var _paramsOfRule = x.Uri.GetParameters(API.GetURI(httpContext));
+                        Context ruleContext = CreateContext();
+                        foreach (var _p in _paramsOfRule)
+                        {
+                            (ruleContext.Parameters as IDictionary<string, object>)[_p.Key] = _p.Value;
+                        }
+                        RuleResults.Add(x.Function.Invoke(ruleContext));
+                    });
+                    if (RuleResults.Any(x => x != null))
+                    {
+                        deliverResult(RuleResults.FirstOrDefault(x => x != null));
+                    }
+                } catch (Exception ex)
+                {
+                    deliverResult(new { Message = ex.Message });
                 }
 
                 beforeRequest.ForEach(x => x.Invoke(context));
@@ -137,27 +176,7 @@ namespace Wire
 
                 afterRequest.ForEach(x => x.Invoke(context));
 
-                Type BaseResultType = MimeResolvers.FirstOrDefault(x => header.Contains((x.GetCustomAttribute(typeof(AcceptHeaderAttribute), true) as AcceptHeaderAttribute).Header));
-
-                if (BaseResultType == null)
-                {
-                    result = new JsonResult(new { Error = "These mime types are not supported", Types = header });
-                    result.Execute(httpContext);
-                }
-                else
-                {
-                    result = Activator.CreateInstance(BaseResultType, new[] { funcResult }) as BaseResult;
-
-                    if (result.IsExecutionReady)
-                    {
-                        result.Execute(httpContext);
-                    }
-                    else
-                    {
-                        result = new JsonResult(new { Error = "Accept header does not match the returned type." });
-                        result.Execute(httpContext);
-                    }
-                }
+                deliverResult(funcResult);
 
                 return await Task.FromResult(true);
             }

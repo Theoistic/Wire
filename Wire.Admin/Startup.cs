@@ -24,7 +24,7 @@ namespace Wire.Admin
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseWire();
+            app.UseWire(env);
             Solidbase.Strategy = () => new SqlConnection("Server=.\\SQLEXPRESS;Database=NewSolidb;Trusted_Connection=True;");
             API.GET("/api/{Type}", x => 
             {

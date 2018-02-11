@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wire.WebSite", "Wire.WebSit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wire.Admin", "Wire.Admin\Wire.Admin.csproj", "{3A4E1179-1642-4F33-B8FD-179EBD722CCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire.Jwt", "Wire.Jwt\Wire.Jwt.csproj", "{947A485B-169A-4BA0-9328-F3D1BA01991D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wire.Jwt", "Wire.Jwt\Wire.Jwt.csproj", "{947A485B-169A-4BA0-9328-F3D1BA01991D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire.Razor", "Wire.Razor\Wire.Razor.csproj", "{A4D56965-C2BA-4121-A027-E3EB94F3866D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{947A485B-169A-4BA0-9328-F3D1BA01991D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{947A485B-169A-4BA0-9328-F3D1BA01991D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{947A485B-169A-4BA0-9328-F3D1BA01991D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4D56965-C2BA-4121-A027-E3EB94F3866D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4D56965-C2BA-4121-A027-E3EB94F3866D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4D56965-C2BA-4121-A027-E3EB94F3866D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4D56965-C2BA-4121-A027-E3EB94F3866D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

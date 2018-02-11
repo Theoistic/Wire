@@ -5,15 +5,10 @@ using System.Text;
 
 namespace Wire
 {
-    [AcceptHeader(Header = "application/json")]
     public class JsonResult : RenderedResult<object>
     {
         private static readonly IsoDateTimeConverter _isoDateTimeConverter = new IsoDateTimeConverter();
 
-        public JsonResult(object result, string contentType) : this(result)
-        {
-            _contentType = contentType;
-        }
 
         public JsonResult(object result)
         {

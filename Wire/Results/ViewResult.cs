@@ -5,7 +5,6 @@ using System.Text;
 
 namespace Wire.Results
 {
-    [AcceptHeader(Header = "text/html")]
     public class ViewResult : RenderedResult<string>
     {
         public ViewResult(object result)

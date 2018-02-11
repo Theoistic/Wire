@@ -88,5 +88,24 @@ namespace Wire
             }
             return "";
         }
+
+        public static byte[] ToBytes(this string str)
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+
+        internal static APIBehaviours FindMatchs(this APIBehaviours behaviours, Uri path)
+        {
+            APIBehaviours _behaviours = new APIBehaviours();
+            foreach (APIBehaviour temp in behaviours)
+            {
+                var parameters = temp.Uri.GetParameters(path);
+                if (parameters != null)
+                {
+                    _behaviours.Add(temp);
+                }
+            }
+            return _behaviours;
+        }
     }
 }
