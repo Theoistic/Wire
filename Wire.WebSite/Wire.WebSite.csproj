@@ -30,4 +30,8 @@
     <ProjectReference Include="..\Wire\Wire.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="modules\" />
+  </ItemGroup>
+
 </Project>

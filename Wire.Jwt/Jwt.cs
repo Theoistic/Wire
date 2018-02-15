@@ -6,9 +6,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace Wire.Jwt
 {
+    [Flags]
+    public enum JwtMode { Header = 0, Session = 1 }
     public static class APIJwt
     {
-        public static void AddJwt(this API.APIPlugins self, Func<LoginModel, bool> UserValidation)
+        public static void AddJwt(this API.APIPlugins self, Func<LoginModel, bool> UserValidation, JwtMode mode)
         {
             API.POST("/token", x =>
             {
@@ -22,29 +24,44 @@ namespace Wire.Jwt
                     { "admin", true }
                 };
 
-                return new
-                {
-                    token = JsonWebToken.NewToken(claims)
+                TokenValidationModel token = new TokenValidationModel {
+                    Token = JsonWebToken.NewToken(claims)
                 };
+
+                if (mode.HasFlag(JwtMode.Session))
+                {
+                    x.HttpContext.Session.Set("IdentityToken", token);
+                }
+
+                return token;
             });
             API.BeforeRequest(x =>
             {
-                if (x.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues values))
-                {
-                    try
+                if (mode.HasFlag(JwtMode.Header)) { 
+                    if (x.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues values))
                     {
-                        string token = values.ToString().Split(' ')[1];
-                        JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(token);
-
-                        x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+                        try
                         {
-                            new Claim(ClaimTypes.Name, tokenInfo.Claims.First().Value as string)
-                        }, "jwt"));
+                            string token = values.ToString().Split(' ')[1];
+                            JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(token);
+
+                            x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
+                        }
+                        catch (Exception ex)
+                        {
+                            // fail silently.
+                            // throw ex;
+                        }
                     }
-                    catch (Exception ex)
+                }
+
+                if (mode.HasFlag(JwtMode.Session))
+                {
+                    TokenValidationModel identityToken = x.HttpContext.Session.Get<TokenValidationModel>("IdentityToken");
+                    if (identityToken != null)
                     {
-                        // fail silently.
-                        // throw ex;
+                        JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(identityToken.Token);
+                        x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
                     }
                 }
             });

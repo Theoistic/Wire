@@ -34,9 +34,9 @@ namespace Wire.WebSite
             app.UseStaticFiles();
             app.UseWire(env);
 
-            API.Plugins.AddJwt(x => x.Username == x.Password);
+            //API.Plugins.AddJwt(x => x.Username == x.Password, JwtMode.Header | JwtMode.Session);
 
-            API.GET("/admin", x => new View("Admin", new IndexModel { }));
+            //API.GET("/admin", x => new View("Admin", new IndexModel { }));
 
             /*API.RULE("/admin/{#path}", x => (x.HttpContext.User.Identity.IsAuthenticated ? null : new { Message = "Not authenticated." }));
             // Admin

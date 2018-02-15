@@ -7,12 +7,16 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Wire
 {
     public class WireMiddleware
     {
         private readonly RequestDelegate _next;
+
+        internal static IServiceCollection services { get; set; }
+        internal static IApplicationBuilder builder { get; set; }
 
         public WireMiddleware(RequestDelegate next)
         {
@@ -33,26 +37,53 @@ namespace Wire
     {
         public static IServiceCollection AddWire(this IServiceCollection services)
         {
-            services.AddDistributedMemoryCache();
-            return services;
+            WireMiddleware.services = services;
+            WireMiddleware.services.AddDistributedMemoryCache();
+            WireMiddleware.services.AddSession();
+            return WireMiddleware.services;
         }
 
-        public static IApplicationBuilder UseWire(this IApplicationBuilder builder, IHostingEnvironment env)
+        public static IApplicationBuilder UseWire(this IApplicationBuilder builder, IHostingEnvironment env, bool registerModules = true)
         {
+            WireMiddleware.builder = builder;
             API.env = env;
-            RegisterAllZones();
-            return builder.UseMiddleware<WireMiddleware>();
+
+            //builder.ApplicationServices.GetService<IServiceCollection>().AddSession();
+            //WireMiddleware.services.AddSession();
+            WireMiddleware.builder.UseSession();
+
+            if (registerModules)
+            {
+                RegisterAPIModules();
+            }
+            return WireMiddleware.builder.UseMiddleware<WireMiddleware>();
         }
 
-        private static void RegisterAllZones()
+        private static List<object> moduleInstances { get; set; }
+        private static void RegisterAPIModules()
         {
             List<Type> types = new List<Type>();
             types.AddUnique(Assembly.GetEntryAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
             types.AddUnique(Assembly.GetCallingAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
             types.AddUnique(Assembly.GetExecutingAssembly().GetAllTypesWithAttribute<APIModuleAttribute>());
+            foreach(var _refAsm in Assembly.GetCallingAssembly().GetReferencedAssemblies()) {
+                Assembly asm = Assembly.Load(_refAsm);
+                if (asm != null) {
+                    types.AddUnique(asm.GetAllTypesWithAttribute<APIModuleAttribute>());
+                }
+            }
+            List<Assembly> moduleAssemblies = Utils.GetModuleAssemblies();
+            if (moduleAssemblies != null)
+            {
+                foreach (var modAsm in moduleAssemblies)
+                {
+                    types.AddUnique(modAsm.GetAllTypesWithAttribute<APIModuleAttribute>());
+                }
+            }
+            moduleInstances = new List<object>();
             foreach (Type t in types)
             {
-                Activator.CreateInstance(t);
+                moduleInstances.Add(Activator.CreateInstance(t));
             }
         }
     }

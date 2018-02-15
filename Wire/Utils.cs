@@ -91,7 +91,12 @@ namespace Wire
 
         public static byte[] ToBytes(this string str)
         {
-            return Encoding.UTF8.GetBytes(str);
+            return Encoding.Default.GetBytes(str);
+        }
+
+        public static string FromBytes(this byte[] bytes)
+        {
+            return Encoding.Default.GetString(bytes);
         }
 
         internal static APIBehaviours FindMatchs(this APIBehaviours behaviours, Uri path)
@@ -106,6 +111,31 @@ namespace Wire
                 }
             }
             return _behaviours;
+        }
+
+        public static List<Assembly> GetModuleAssemblies()
+        {
+            if (API.env == null)
+                return null;
+
+            List<Assembly> _asm = new List<Assembly>();
+
+            string _moduleDirectory = Path.Combine(API.env.ContentRootPath, "modules");
+            if (!Directory.Exists(_moduleDirectory))
+                return null;
+
+            foreach(var f in Directory.EnumerateFiles(_moduleDirectory, "*.dll", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    _asm.Add(Assembly.LoadFile(f));
+                } catch(Exception ex)
+                {
+                    // unable to load file .. maybe unsupported format.
+                }
+            }
+
+            return _asm;
         }
     }
 }

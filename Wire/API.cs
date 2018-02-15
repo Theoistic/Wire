@@ -69,6 +69,8 @@ namespace Wire
         }
     }
 
+    public delegate void HttpRequest(string path, Func<Context, object> body, Func<Context, bool> condition = null);
+
     public static partial class API 
     {
         public static IHostingEnvironment env { get; internal set; }
@@ -94,10 +96,13 @@ namespace Wire
         public static void RULE(string path, Func<Context, object> body) => Rules.Add(path, body);
 
 
+        public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri(path)).Function(context);
+
+
         internal static List<Action<Context>> beforeRequest = new List<Action<Context>>();
         internal static List<Action<Context>> afterRequest = new List<Action<Context>>();
         public static void BeforeRequest(Action<Context> body) => beforeRequest.Add(body);
-        public static void AfterRequre(Action<Context> body) => afterRequest.Add(body);
+        public static void AfterRequest(Action<Context> body) => afterRequest.Add(body);
 
         public static Uri GetURI(HttpContext context) => new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}");
         public static APIBehaviour Match(HttpContext context) => Behaviours[context.Request.Method.ToUpper().GetHttpMethod()].FindMatch(GetURI(context));
