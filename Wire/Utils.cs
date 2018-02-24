@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Primitives;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -136,6 +138,19 @@ namespace Wire
             }
 
             return _asm;
+        }
+
+        public static bool ValidateJSON(this string s)
+        {
+            try
+            {
+                JToken.Parse(s);
+                return true;
+            }
+            catch (JsonReaderException ex)
+            {
+                return false;
+            }
         }
     }
 }

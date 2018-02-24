@@ -20,7 +20,7 @@ namespace Wire.Jwt
                     return new { Error = "Invalid credentials" };
 
                 var claims = new Dictionary<string, object> {
-                    { "name", model.Username },
+                    { "name", model.UserName },
                     { "admin", true }
                 };
 
@@ -61,7 +61,8 @@ namespace Wire.Jwt
                     if (identityToken != null)
                     {
                         JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(identityToken.Token);
-                        x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
+                        List<Claim> claims = tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value.ToString())).ToList();
+                        x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
                     }
                 }
             });
@@ -74,11 +75,11 @@ namespace Wire.Jwt
 
     public class LoginModel
     {
-        public string Username { get; set; }
+        public string UserName { get; set; }
         public string Password { get; set; }
     }
 
-    internal class TokenValidationModel
+    public class TokenValidationModel
     {
         public string Token { get; set; }
     }

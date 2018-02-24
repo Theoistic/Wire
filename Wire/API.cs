@@ -37,7 +37,19 @@ namespace Wire
         private string _body { get; set; }
         public ContextBody(string body) => _body = body;
         public override string ToString() => _body;
-        public T As<T>() where T : class => JsonConvert.DeserializeObject<T>(_body);
+
+        public T As<T>() where T : class {
+            if(_body.ValidateJSON()) {
+                return JsonConvert.DeserializeObject<T>(_body);
+            } else
+            {
+                var _bodyDict = _body.Split('&').Select(q => q.Split('='))
+                   .ToDictionary(k => k[0], v => v[1]); // might need to decode the value since its stored in a query string.
+                var _bodyJsonified = JsonConvert.SerializeObject(_bodyDict);
+                return JsonConvert.DeserializeObject<T>(_bodyJsonified);
+            }
+        }
+
         public dynamic As(Type type) => JsonConvert.DeserializeObject(_body, type);
     }
 
@@ -84,7 +96,7 @@ namespace Wire
             { HttpMethod.PATCH, new APIBehaviours() }
         };
 
-        public static APIBehaviours Rules { get; private set; } = new APIBehaviours();
+        //public static APIBehaviours Rules { get; private set; } = new APIBehaviours();
 
         public static void GET(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.GET].Add(path, body, condition);
         public static void POST(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.POST].Add(path, body, condition);
@@ -93,14 +105,38 @@ namespace Wire
         public static void OPTIONS(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
         public static void PATCH(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
 
-        public static void RULE(string path, Func<Context, object> body) => Rules.Add(path, body);
+        public static void RULE(string path, Func<Context, object> body)
+        {
+            beforeRequest.Add((context) =>
+            {
+                Uri uri = new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{context.HttpContext.Request.Path}");
+                UriTemplate tmpl = new UriTemplate(path);
+                if(tmpl.GetParameters(uri) != null)
+                {
+                    object ruleResult = body(context);
+                    if(ruleResult != null)
+                    {
+                        if (ruleResult is BaseResult)
+                        {
+                            Type typeOfResult = ruleResult.GetType();
+                            (ruleResult as BaseResult).Execute(context.HttpContext);
+                        }
+                        else
+                        {
+                            var result = new JsonResult(ruleResult);
+                            result.Execute(context.HttpContext);
+                        }
+                    }
+                }
+            });
+        } 
 
-
-        public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri(path)).Function(context);
+        public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{path}")).Function(context);
 
 
         internal static List<Action<Context>> beforeRequest = new List<Action<Context>>();
         internal static List<Action<Context>> afterRequest = new List<Action<Context>>();
+
         public static void BeforeRequest(Action<Context> body) => beforeRequest.Add(body);
         public static void AfterRequest(Action<Context> body) => afterRequest.Add(body);
 
@@ -143,7 +179,7 @@ namespace Wire
                     }
                 };
 
-                try
+                /*try
                 {
                     List<object> RuleResults = new List<object>();
                     Rules.FindMatchs(API.GetURI(httpContext)).ForEach(x =>
@@ -163,7 +199,7 @@ namespace Wire
                 } catch (Exception ex)
                 {
                     deliverResult(new { Message = ex.Message });
-                }
+                }*/
 
                 beforeRequest.ForEach(x => x.Invoke(context));
 

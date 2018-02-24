@@ -50,7 +50,7 @@ namespace Wire.Admin
                 return true;
             });
 
-            API.Plugins.AddJwt(x => x.Username == x.Password, JwtMode.Session);
+            //API.Plugins.AddJwt(x => x.Username == x.Password, JwtMode.Session);
 
             API.Conditions.Add("Authentication", x => x.HttpContext.User.Identity.IsAuthenticated);
 

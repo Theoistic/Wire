@@ -11,6 +11,8 @@ using System.IO;
 using Microsoft.AspNetCore.WebUtilities;
 using Wire.Razor;
 using Wire.Jwt;
+using Solidb;
+using System.Data.SqlClient;
 
 namespace Wire.WebSite
 {
@@ -33,6 +35,29 @@ namespace Wire.WebSite
 
             app.UseStaticFiles();
             app.UseWire(env);
+
+
+            Solidbase.Strategy = () => new SqlConnection("Server=.\\SQLEXPRESS;Database=WireSolidbFusion;Trusted_Connection=True;");
+
+            Solidbase users = new Solidbase<User>();
+
+            API.Plugins.AddJwt(x => new Solidbase<User>().Any(g => g.UserName == x.UserName && g.Password == x.Password), JwtMode.Header | JwtMode.Session);
+
+            API.RULE("/admin/{#path}", x => (x.HttpContext.User.Identity.IsAuthenticated ? null : new Redirect("/login/") ));
+            
+            API.GET("/login/", x => new View("Login"));
+            API.POST("/login/", x =>
+            {
+                if(API.Call(HttpMethod.POST, "/token", x) is TokenValidationModel)
+                {
+                    return new Redirect("/admin/");
+                } else
+                {
+                    return new Redirect("/login/");
+                }
+            });
+
+            API.GET("/admin/", x => new View("Admin", new IndexModel { }));
 
             //API.Plugins.AddJwt(x => x.Username == x.Password, JwtMode.Header | JwtMode.Session);
 
@@ -63,7 +88,7 @@ namespace Wire.WebSite
 
 
 
-            API.GET("/file/{filename}", x =>
+            /*API.GET("/file/{filename}", x =>
             {
                 return new ContentResult(x.Parameters.filename, "image/png");
             });
@@ -104,9 +129,15 @@ namespace Wire.WebSite
                     }
                 }
                 return new { OK = 200 };
-            });
+            });*/
         }
     }
 
     
+    public class User
+    {
+        public int Id { get; set; }
+        public string UserName { get; set; }
+        public string Password { get; set; }
+    }
 }

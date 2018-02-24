@@ -10,7 +10,7 @@ namespace Wire.Razor
         public override bool IsExecutionReady => true;
         public string result { get; private set; }
 
-        public View(string viewName, object model)
+        public View(string viewName, object model = null)
         {
             var engine = new RazorLightEngineBuilder()
               .UseFilesystemProject(API.env.ContentRootPath)
