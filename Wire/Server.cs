@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Wire
 {
-    public class SimpleHTTPServer : IDisposable
+    public class WireHTTPServer : IDisposable
     {
        
         private Thread _serverThread;
@@ -22,12 +22,12 @@ namespace Wire
             private set { }
         }
 
-        public SimpleHTTPServer(int port)
+        public WireHTTPServer(int port)
         {
             this.Initialize(port);
         }
 
-        public SimpleHTTPServer(string path)
+        public WireHTTPServer()
         {
             TcpListener l = new TcpListener(IPAddress.Loopback, 0);
             l.Start();
@@ -53,6 +53,7 @@ namespace Wire
                 {
                     HttpListenerContext context = _listener.GetContext();
                     await API.Resolve(API.FromHttpListener(context));
+                    context.Response.Close();
                 }
                 catch (Exception ex)
                 {
