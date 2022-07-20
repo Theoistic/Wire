@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.IO;
 
 namespace Wire
@@ -10,10 +9,10 @@ namespace Wire
         protected string _contentType = "text/html";
         private MemoryStream _cachedSerializedResult;
         protected abstract void Render(Stream s, T t);
-
-        public override void Execute(HttpContext context)
+        
+        public override void Execute(Context context)
         {
-            HttpResponse response = context.Response;
+            var response = context.Response;
             response.ContentType = _contentType;
             if (_cachedSerializedResult != null)
             {
@@ -21,7 +20,7 @@ namespace Wire
             }
             else
             {
-                Render(response.Body, _result);
+                Render(response.OutputStream, _result);
             }
         }
 

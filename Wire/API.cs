@@ -1,15 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Dynamic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using System.Net;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Wire
@@ -26,10 +20,13 @@ namespace Wire
 
     public class Context
     {
-        public dynamic Parameters { get; internal set; }
-        public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.Value.ParseQueryString();
-        public HttpContext HttpContext { get; set; }
+        public dynamic Parameters { get; internal set; } = new ExpandoObject();
+        public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.ParseQueryString();
+        public HttpListenerContext HttpContext { get; set; }
         public ContextBody Body { get; set; }
+
+        public HttpListenerRequest Request => HttpContext.Request;
+        public HttpListenerResponse Response => HttpContext.Response;
     }
 
     public class ContextBody
@@ -40,17 +37,17 @@ namespace Wire
 
         public T As<T>() where T : class {
             if(_body.ValidateJSON()) {
-                return JsonConvert.DeserializeObject<T>(_body);
+                return JsonSerializer.Deserialize<T>(_body);
             } else
             {
                 var _bodyDict = _body.Split('&').Select(q => q.Split('='))
                    .ToDictionary(k => k[0], v => v[1]); // might need to decode the value since its stored in a query string.
-                var _bodyJsonified = JsonConvert.SerializeObject(_bodyDict);
-                return JsonConvert.DeserializeObject<T>(_bodyJsonified);
+                var _bodyJsonified = JsonSerializer.Serialize(_bodyDict);
+                return JsonSerializer.Deserialize<T>(_bodyJsonified);
             }
         }
 
-        public dynamic As(Type type) => JsonConvert.DeserializeObject(_body, type);
+        public dynamic As(Type type) => JsonSerializer.Deserialize(_body, type);
     }
 
     public class APIBehaviours : List<APIBehaviour>
@@ -85,8 +82,6 @@ namespace Wire
 
     public static partial class API 
     {
-        public static IHostingEnvironment env { get; internal set; }
-
         public static Dictionary<HttpMethod, APIBehaviours> Behaviours { get; set; } = new Dictionary<HttpMethod, APIBehaviours>() {
             { HttpMethod.GET, new APIBehaviours() },
             { HttpMethod.POST, new APIBehaviours() },
@@ -105,11 +100,26 @@ namespace Wire
         public static void OPTIONS(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
         public static void PATCH(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
 
+        public static Context FromHttpListener(HttpListenerContext httpListenerContext)
+        {
+            var context = new Context { HttpContext = httpListenerContext };
+            var request = httpListenerContext.Request;
+            var queryString = request.QueryString;
+            /*var body = new ContextBody(request.InputStream.ReadToEnd());
+            context.Body = body;*/
+            context.Parameters = new ExpandoObject();
+            foreach (var key in queryString.AllKeys)
+            {
+                context.Parameters[key] = queryString[key];
+            }
+            return context;
+        }
+
         public static void RULE(string path, Func<Context, object> body)
         {
             beforeRequest.Add((context) =>
             {
-                Uri uri = new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{context.HttpContext.Request.Path}");
+                Uri uri = context.HttpContext.Request.Url;
                 UriTemplate tmpl = new UriTemplate(path);
                 if(tmpl.GetParameters(uri) != null)
                 {
@@ -119,19 +129,19 @@ namespace Wire
                         if (ruleResult is BaseResult)
                         {
                             Type typeOfResult = ruleResult.GetType();
-                            (ruleResult as BaseResult).Execute(context.HttpContext);
+                            (ruleResult as BaseResult).Execute(context);
                         }
                         else
                         {
                             var result = new JsonResult(ruleResult);
-                            result.Execute(context.HttpContext);
+                            result.Execute(context);
                         }
                     }
                 }
             });
         } 
 
-        public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{path}")).Function(context);
+        //public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{path}")).Function(context);
 
 
         internal static List<Action<Context>> beforeRequest = new List<Action<Context>>();
@@ -140,28 +150,17 @@ namespace Wire
         public static void BeforeRequest(Action<Context> body) => beforeRequest.Add(body);
         public static void AfterRequest(Action<Context> body) => afterRequest.Add(body);
 
-        public static Uri GetURI(HttpContext context) => new Uri($"{context.Request.Scheme}://{context.Request.Host}{context.Request.Path}");
-        public static APIBehaviour Match(HttpContext context) => Behaviours[context.Request.Method.ToUpper().GetHttpMethod()].FindMatch(GetURI(context));
+        public static Uri GetURI(Context context) => context.HttpContext.Request.Url;
+        public static APIBehaviour Match(Context context) => Behaviours[context.HttpContext.Request.HttpMethod.ToUpper().GetHttpMethod()].FindMatch(GetURI(context));
 
-        public static async Task<bool> Resolve(HttpContext httpContext)
+        public static async Task<bool> Resolve(Context context)
         {
-            APIBehaviour behaviour = API.Match(httpContext);
+            APIBehaviour behaviour = API.Match(context);
             if (behaviour != null)
             {
                 BaseResult result;
 
-                Func<Context> CreateContext = () =>
-                {
-                    return new Context
-                    {
-                        Parameters = new ExpandoObject(),
-                        HttpContext = httpContext,
-                        Body = new ContextBody(httpContext.GetJsonBody())
-                    };
-                };
-
-                Context context = CreateContext();
-                var _params = behaviour.Uri.GetParameters(API.GetURI(httpContext));
+                var _params = behaviour.Uri.GetParameters(API.GetURI(context));
                 foreach (var _p in _params) {
                     (context.Parameters as IDictionary<string, object>).Add(_p.Key, _p.Value);
                 }
@@ -170,12 +169,12 @@ namespace Wire
                     if (givenResult is BaseResult)
                     {
                         Type typeOfResult = givenResult.GetType();
-                        (givenResult as BaseResult).Execute(httpContext);
+                        (givenResult as BaseResult).Execute(context);
                     }
                     else
                     {
                         result = new JsonResult(givenResult);
-                        result.Execute(httpContext);
+                        result.Execute(context);
                     }
                 };
 
@@ -208,7 +207,7 @@ namespace Wire
                     if(behaviour.Condition.Invoke(context) == false)
                     {
                         result = new JsonResult(new { Error = "Condition Failed." });
-                        result.Execute(httpContext);
+                        result.Execute(context);
                         return await Task.FromResult(true);
                     }
                 }

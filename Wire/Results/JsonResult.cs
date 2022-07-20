@@ -1,15 +1,12 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.IO;
+﻿using System.IO;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Wire
 {
     public class JsonResult : RenderedResult<object>
     {
-        private static readonly IsoDateTimeConverter _isoDateTimeConverter = new IsoDateTimeConverter();
-
-
         public JsonResult(object result)
         {
             _contentType = "application/json";
@@ -18,7 +15,7 @@ namespace Wire
 
         protected override void Render(Stream s, object t)
         {
-            var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(_result, _isoDateTimeConverter));
+            var buffer = JsonSerializer.SerializeToUtf8Bytes(_result);
             s.Write(buffer, 0, buffer.Length);
         }
     }

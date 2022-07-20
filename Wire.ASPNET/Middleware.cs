@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Wire
 {
@@ -23,9 +23,11 @@ namespace Wire
             _next = next;
         }
 
+        [Obsolete("Non-Functional after the rewrite to take asp.net out of the core library.")]
         public async Task Invoke(HttpContext httpContext)
         {
-            var processRequest = await API.Resolve(httpContext);
+            var context = new Context();
+            var processRequest = await API.Resolve(context);
             if(!processRequest)
             {
                 await _next.Invoke(httpContext);
@@ -39,18 +41,18 @@ namespace Wire
         {
             WireMiddleware.services = services;
             WireMiddleware.services.AddDistributedMemoryCache();
-            WireMiddleware.services.AddSession();
+            //WireMiddleware.services.AddSession();
             return WireMiddleware.services;
         }
 
         public static IApplicationBuilder UseWire(this IApplicationBuilder builder, IHostingEnvironment env, bool registerModules = true)
         {
             WireMiddleware.builder = builder;
-            API.env = env;
+            //API.env = env;
 
             //builder.ApplicationServices.GetService<IServiceCollection>().AddSession();
             //WireMiddleware.services.AddSession();
-            WireMiddleware.builder.UseSession();
+            //WireMiddleware.builder.UseSession();
 
             if (registerModules)
             {
@@ -72,14 +74,14 @@ namespace Wire
                     types.AddUnique(asm.GetAllTypesWithAttribute<APIModuleAttribute>());
                 }
             }
-            List<Assembly> moduleAssemblies = Utils.GetModuleAssemblies();
+            /*List<Assembly> moduleAssemblies = Utils.GetModuleAssemblies();
             if (moduleAssemblies != null)
             {
                 foreach (var modAsm in moduleAssemblies)
                 {
                     types.AddUnique(modAsm.GetAllTypesWithAttribute<APIModuleAttribute>());
                 }
-            }
+            }*/
             moduleInstances = new List<object>();
             foreach (Type t in types)
             {

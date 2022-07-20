@@ -1,9 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Wire.Jwt
 {
@@ -401,8 +401,8 @@ namespace Wire.Jwt
 
             IncludeExpirationTime(claims, expirationTime);
 
-            var encodedHeader = _base64Url.Encode(GetBytes(JsonConvert.SerializeObject(header)));
-            var encodedPayload = _base64Url.Encode(GetBytes(JsonConvert.SerializeObject(claims)));
+            var encodedHeader = _base64Url.Encode(GetBytes(JsonSerializer.Serialize(header)));
+            var encodedPayload = _base64Url.Encode(GetBytes(JsonSerializer.Serialize(claims)));
             var encodedSignature = CreateSignature(method, key, encodedHeader, encodedPayload);
 
             return $"{encodedHeader}.{encodedPayload}.{encodedSignature}";
@@ -436,8 +436,8 @@ namespace Wire.Jwt
             var decodedHeader = _base64Url.Decode(parts[0]);
             var decodedClaims = _base64Url.Decode(parts[1]);
 
-            var headerDictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(GetString(decodedHeader));
-            var claimsDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(GetString(decodedClaims));
+            var headerDictionary = JsonSerializer.Deserialize<Dictionary<string, string>>(GetString(decodedHeader));
+            var claimsDictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(GetString(decodedClaims));
 
             if (key != null)
             {

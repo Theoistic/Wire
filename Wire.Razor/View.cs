@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Wire.Razor
 {
-    public class View : BaseResult
+    /*public class View : BaseResult
     {
         public override bool IsExecutionReady => true;
         public string result { get; private set; }
@@ -26,5 +26,5 @@ namespace Wire.Razor
             var buffer = Encoding.UTF8.GetBytes(result);
             context.Response.Body.Write(buffer, 0, buffer.Length);
         }
-    }
+    }*/
 }

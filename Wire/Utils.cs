@@ -1,14 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+﻿using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Dynamic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 
 namespace Wire
 {
@@ -19,23 +17,23 @@ namespace Wire
             return (HttpMethod)Enum.Parse(typeof(HttpMethod), self);
         }
 
-        public static string GetJsonBody(this HttpContext self)
+        public static string GetJsonBody(this Context self)
         {
             var bodyStr = "";
             var req = self.Request;
 
             // Allows using several time the stream in ASP.Net Core
-            req.EnableRewind();
+            //req.EnableRewind();
 
             // Arguments: Stream, Encoding, detect encoding, buffer size 
             // AND, the most important: keep stream opened
-            using (StreamReader reader = new StreamReader(req.Body, Encoding.UTF8, true, 1024, true))
+            using (StreamReader reader = new StreamReader(req.InputStream, Encoding.UTF8, true, 1024, true))
             {
                 bodyStr = reader.ReadToEnd();
             }
 
             // Rewind, so the core is not lost when it looks the body for the request
-            req.Body.Position = 0;
+            req.InputStream.Position = 0;
 
             return bodyStr;
         }
@@ -59,17 +57,27 @@ namespace Wire
             }
         }
 
-        public static Dictionary<string, string> ParseQueryString(this string requestQueryString)
+        public static Dictionary<string, string> ParseQueryString(this NameValueCollection requestQueryString)
         {
-            Dictionary<string, string> rc = new Dictionary<string, string>();
-            string[] ar1 = requestQueryString.Split(new char[] { '&', '?' });
-            foreach (string row in ar1)
+            //Dictionary<string, string> rc = new Dictionary<string, string>();
+            //string[] ar1 = requestQueryString.Split(new char[] { '&', '?' });
+            //foreach (string row in ar1)
+            //{
+            //    if (string.IsNullOrEmpty(row)) continue;
+            //    int index = row.IndexOf('=');
+            //    rc[Uri.UnescapeDataString(row.Substring(0, index))] = Uri.UnescapeDataString(row.Substring(index + 1)); // use Unescape only parts          
+            //}
+            //return rc;
+            
+            var dict = new Dictionary<string, string>();
+            if (requestQueryString != null)
             {
-                if (string.IsNullOrEmpty(row)) continue;
-                int index = row.IndexOf('=');
-                rc[Uri.UnescapeDataString(row.Substring(0, index))] = Uri.UnescapeDataString(row.Substring(index + 1)); // use Unescape only parts          
+                foreach (string key in requestQueryString.AllKeys)
+                {
+                    dict.Add(key, requestQueryString[key]);
+                }
             }
-            return rc;
+            return dict;
         }
 
         public static bool HasValue(this ExpandoObject self, string property)
@@ -82,14 +90,14 @@ namespace Wire
             return self.HasValue(property) ? (self as IDictionary<string, T>)[property] : default(T);
         }
 
-        public static string TryGetValue(this IHeaderDictionary self, string property)
+        /*public static string TryGetValue(this IHeaderDictionary self, string property)
         {
             if(self.TryGetValue(property, out StringValues value))
             {
                 return value.ToString();
             }
             return "";
-        }
+        }*/
 
         public static byte[] ToBytes(this string str)
         {
@@ -115,7 +123,7 @@ namespace Wire
             return _behaviours;
         }
 
-        public static List<Assembly> GetModuleAssemblies()
+        /*public static List<Assembly> GetModuleAssemblies()
         {
             if (API.env == null)
                 return null;
@@ -138,16 +146,16 @@ namespace Wire
             }
 
             return _asm;
-        }
+        }*/
 
         public static bool ValidateJSON(this string s)
         {
             try
             {
-                JToken.Parse(s);
+                var test = JsonSerializer.Serialize(s);
                 return true;
             }
-            catch (JsonReaderException ex)
+            catch (Exception ex)
             {
                 return false;
             }

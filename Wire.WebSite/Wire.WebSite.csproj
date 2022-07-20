@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Wire.ASPNET\Wire.ASPNET.csproj" />
     <ProjectReference Include="..\Wire.Jwt\Wire.Jwt.csproj" />
     <ProjectReference Include="..\Wire.Razor\Wire.Razor.csproj" />
     <ProjectReference Include="..\Wire\Wire.csproj" />

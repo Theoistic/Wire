@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http.Headers;
-using System.IO;
-using Microsoft.AspNetCore.WebUtilities;
-using Wire.Razor;
 using Wire.Jwt;
 using Solidb;
 using System.Data.SqlClient;
@@ -45,7 +37,7 @@ namespace Wire.WebSite
 
             API.RULE("/admin/{#path}", x => (x.HttpContext.User.Identity.IsAuthenticated ? null : new Redirect("/login/") ));
             
-            API.GET("/login/", x => new View("Login"));
+            //API.GET("/login/", x => new View("Login"));
             API.POST("/login/", x =>
             {
                 if(API.Call(HttpMethod.POST, "/token", x) is TokenValidationModel)
@@ -57,7 +49,7 @@ namespace Wire.WebSite
                 }
             });
 
-            API.GET("/admin/", x => new View("Admin", new IndexModel { }));
+            //API.GET("/admin/", x => new View("Admin", new IndexModel { }));
 
             //API.Plugins.AddJwt(x => x.Username == x.Password, JwtMode.Header | JwtMode.Session);
 

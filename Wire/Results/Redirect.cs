@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,11 +14,11 @@ namespace Wire
             this.path = path;
         }
 
-        public override void Execute(HttpContext context)
+        public override void Execute(Context context)
         {
             if (path.StartsWith("/"))
             {
-                context.Response.Redirect($"{context.Request.Scheme}://{context.Request.Host}{path}");
+                context.Response.Redirect($"{path}"); // {context.Request.Scheme}://{context.Request.Host}
             }
             else
             {

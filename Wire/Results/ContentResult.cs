@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,11 +15,11 @@ namespace Wire
 
         public ContentResult() { }
 
-        public ContentResult(string filename, string contentType)
+        /*public ContentResult(string filename, string contentType)
         {
             this._data = ReadFile(filename);
             this._contentType = contentType;
-        }
+        }*/
 
         public ContentResult(byte[] data, string contentType)
         {
@@ -27,22 +27,21 @@ namespace Wire
             this._contentType = contentType;
         }
 
-        private byte[] ReadFile(string filename)
+        /*private byte[] ReadFile(string filename)
         {
             return System.IO.File.ReadAllBytes(System.IO.Path.Combine(API.env.WebRootPath, filename));
-        }
+        }*/
 
-        public override void Execute(HttpContext context)
+        public override void Execute(Context context)
         {
-            HttpResponse response = context.Response;
-            response.ContentType = _contentType;
+            context.Response.ContentType = _contentType;
             if (_cachedSerializedResult != null)
             {
                 throw new NotImplementedException();
             }
             else
             {
-                response.Body.Write(_data, 0, _data.Length);
+                context.Response.OutputStream.Write(_data, 0, _data.Length);
             }
         }
 
