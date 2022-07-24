@@ -47,7 +47,7 @@ namespace Wire.Jwt
                             string token = Authorization.Split(' ')[1];
                             JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(token);
 
-                            x.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
+                            x.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value.ToString())), "jwt"));
                         }
                         catch (Exception ex)
                         {

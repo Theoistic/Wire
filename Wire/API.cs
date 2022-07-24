@@ -76,8 +76,7 @@ namespace Wire
             var context = new Context { HttpContext = httpListenerContext };
             var request = httpListenerContext.Request;
             var queryString = request.QueryString;
-            /*var body = new ContextBody(request.InputStream.ReadToEnd());
-            context.Body = body;*/
+            context.Body = new ContextBody(request.InputStream);
             context.Parameters = new ExpandoObject();
             foreach (var key in queryString.AllKeys)
             {

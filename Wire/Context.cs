@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Principal;
@@ -25,6 +26,12 @@ namespace Wire
     {
         private string _body { get; set; }
         public ContextBody(string body) => _body = body;
+        public ContextBody(Stream stream)
+        {
+            using var reader = new StreamReader(stream);
+            _body = reader.ReadToEnd();
+        }
+        
         public override string ToString() => _body;
 
         public T As<T>() where T : class
