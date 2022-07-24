@@ -17,7 +17,13 @@ PM> Install-Package Wire.NET
 
 Wire Supports all the standard http requests, GET, POST, PUT, DELETE, OPTIONS, PATCH. and setting up a request is fast too.
 ```cs
+using Wire;
+
+var server = new WireHTTPServer(80);
 API.GET("/info/{message}", x => new { Message = x.Parameters.message });
+
+Console.ReadLine();
+server.Stop();
 ```
 so in the example of http://localhost/info/OK
 would return a json reponse as { Message: "OK" }
@@ -36,7 +42,7 @@ If we need to filter something out. in the case of http://localhost/blog/posts?q
 
 ## Motivation
 
-I like that the core essential need of applications to have a web endpoint. so a WinForms app can have a single json endpoint as sampled above
+I like that the core essential need of applications to have a web endpoint. so a console app can have a single json endpoint as sampled above
 without the need of a huge and heavy framework as ASP.NET MVC.
 I liked how nancy decorated the reqests in to action parameters. It gave an illution of control.
 Modules and bootstraps.
@@ -48,10 +54,5 @@ for(int i = 0; i < 10; i++) {
 }
 ```
 
-And later...
+API bindings can be replaced runtime as well, so if something is mapped to /hello and you map another function to an existing mapping its replaced.
 
-```cs
-API.Behaviours[HttpMethod.GET].FindMatch(new Uri("http://localhost/2")).Function = x => new { Changed = true };
-```
-
-If one wanted to.
