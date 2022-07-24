@@ -14,40 +14,8 @@ namespace Wire
     {
         public HttpMethod Method { get; set; }
         public UriTemplate Uri { get; set; }
-        public Func<Context, object> Function { get; set; }
-        public Func<Context, bool> Condition { get; set; }
-    }
-
-    public class Context
-    {
-        public dynamic Parameters { get; internal set; } = new ExpandoObject();
-        public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.ParseQueryString();
-        public HttpListenerContext HttpContext { get; set; }
-        public ContextBody Body { get; set; }
-
-        public HttpListenerRequest Request => HttpContext.Request;
-        public HttpListenerResponse Response => HttpContext.Response;
-    }
-
-    public class ContextBody
-    {
-        private string _body { get; set; }
-        public ContextBody(string body) => _body = body;
-        public override string ToString() => _body;
-
-        public T As<T>() where T : class {
-            if(_body.ValidateJSON()) {
-                return JsonSerializer.Deserialize<T>(_body);
-            } else
-            {
-                var _bodyDict = _body.Split('&').Select(q => q.Split('='))
-                   .ToDictionary(k => k[0], v => v[1]); // might need to decode the value since its stored in a query string.
-                var _bodyJsonified = JsonSerializer.Serialize(_bodyDict);
-                return JsonSerializer.Deserialize<T>(_bodyJsonified);
-            }
-        }
-
-        public dynamic As(Type type) => JsonSerializer.Deserialize(_body, type);
+        public WireAction Function { get; set; }
+        public WireCondition Condition { get; set; }
     }
 
     public class APIBehaviours : List<APIBehaviour>
@@ -62,12 +30,12 @@ namespace Wire
             return null;
         }
 
-        public void Add(string path, Func<Context, object> function, Func<Context, bool> condition = null) => Add(new APIBehaviour { Uri = new UriTemplate(path), Function = function, Condition = condition });
+        public void Add(string path, WireAction function, WireCondition condition = null) => Add(new APIBehaviour { Uri = new UriTemplate(path), Function = function, Condition = condition });
 
         public new void Add(APIBehaviour item)
         {
             Predicate<APIBehaviour> _match = x => x.Uri == item.Uri && x.Method == item.Method;
-            if (Exists(_match))
+            if (Exists(_match)) // Replaces an existing binding..
             {
                 RemoveAll(_match);
                 base.Add(item);
@@ -78,7 +46,10 @@ namespace Wire
         }
     }
 
-    public delegate void HttpRequest(string path, Func<Context, object> body, Func<Context, bool> condition = null);
+    public delegate bool WireCondition(Context context);
+    public delegate object WireAction(Context contxt);
+
+    public delegate void HttpRequest(string path, WireAction body, WireCondition condition = null);
 
     public static partial class API 
     {
@@ -93,12 +64,12 @@ namespace Wire
 
         //public static APIBehaviours Rules { get; private set; } = new APIBehaviours();
 
-        public static void GET(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.GET].Add(path, body, condition);
-        public static void POST(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.POST].Add(path, body, condition);
-        public static void DELETE(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.DELETE].Add(path, body, condition);
-        public static void PUT(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PUT].Add(path, body, condition);
-        public static void OPTIONS(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
-        public static void PATCH(string path, Func<Context, object> body, Func<Context, bool> condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
+        public static void GET(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.GET].Add(path, body, condition);
+        public static void POST(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.POST].Add(path, body, condition);
+        public static void DELETE(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.DELETE].Add(path, body, condition);
+        public static void PUT(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.PUT].Add(path, body, condition);
+        public static void OPTIONS(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
+        public static void PATCH(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
 
         public static Context FromHttpListener(HttpListenerContext httpListenerContext)
         {
@@ -115,7 +86,7 @@ namespace Wire
             return context;
         }
 
-        public static void RULE(string path, Func<Context, object> body)
+        public static void RULE(string path, WireAction body)
         {
             beforeRequest.Add((context) =>
             {
@@ -233,6 +204,6 @@ namespace Wire
 
     public static partial class API
     {
-        public static Dictionary<string, Func<Context, bool>> Conditions = new Dictionary<string, Func<Context, bool>> { };
+        public static Dictionary<string, WireCondition> Conditions = new Dictionary<string, WireCondition> { };
     }
 }

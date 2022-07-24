@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Wire
+namespace Wire.ASPNET
 {
     public class WireMiddleware
     {
@@ -26,8 +21,7 @@ namespace Wire
         [Obsolete("Non-Functional after the rewrite to take asp.net out of the core library.")]
         public async Task Invoke(HttpContext httpContext)
         {
-            var context = new Context();
-            var processRequest = await API.Resolve(context);
+            var processRequest = await ASPNET.API.Resolve(httpContext);
             if(!processRequest)
             {
                 await _next.Invoke(httpContext);
@@ -37,6 +31,7 @@ namespace Wire
 
     public static class WireMiddlewareExtensions
     {
+        [Obsolete("Highly experimental feature.")]
         public static IServiceCollection AddWire(this IServiceCollection services)
         {
             WireMiddleware.services = services;
@@ -87,6 +82,28 @@ namespace Wire
             {
                 moduleInstances.Add(Activator.CreateInstance(t));
             }
+        }
+    }
+
+    public static partial class API
+    {
+        public static async Task<bool> Resolve(HttpContext context)
+        {
+
+            Context wireContext = new Context
+            {
+
+            };
+            return await Wire.API.Resolve(wireContext);
+        }
+
+        public static Context FromHttpContext(HttpContext context)
+        {
+            Context wireContext = new Context
+            {
+                
+            };
+            return wireContext;
         }
     }
 }

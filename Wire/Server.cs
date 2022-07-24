@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Wire
 {
@@ -22,7 +18,7 @@ namespace Wire
             private set { }
         }
 
-        public WireHTTPServer(int port)
+        public WireHTTPServer(int port = 80)
         {
             this.Initialize(port);
         }
@@ -36,6 +32,12 @@ namespace Wire
             this.Initialize(port);
         }
 
+        public void Wait()
+        {
+            Console.Read();
+            Stop();
+        }
+
         public void Stop()
         {
             _serverThread.Abort();
@@ -46,6 +48,7 @@ namespace Wire
         {
             _listener = new HttpListener();
             _listener.Prefixes.Add("http://*:" + _port.ToString() + "/");
+            //_listener.Prefixes.Add("https://*:" + _port.ToString() + "/");
             _listener.Start();
             while (true)
             {

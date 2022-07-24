@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Linq;
 using Microsoft.Extensions.Primitives;
+using System.Net;
 
 namespace Wire.Jwt
 {
@@ -30,22 +31,23 @@ namespace Wire.Jwt
 
                 if (mode.HasFlag(JwtMode.Session))
                 {
-                    x.HttpContext.Session.Set("IdentityToken", token);
+                    x.Response.Cookies.Add(new System.Net.Cookie("IdentityToken", token.Token));
                 }
 
                 return token;
             });
             API.BeforeRequest(x =>
             {
-                if (mode.HasFlag(JwtMode.Header)) { 
-                    if (x.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues values))
+                if (mode.HasFlag(JwtMode.Header)) {
+                    string? Authorization = x.Request.Headers.Get("Authorization");
+                    if (!string.IsNullOrEmpty(Authorization))
                     {
                         try
                         {
-                            string token = values.ToString().Split(' ')[1];
+                            string token = Authorization.Split(' ')[1];
                             JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(token);
 
-                            x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
+                            x.User = new ClaimsPrincipal(new ClaimsIdentity(tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value as string)), "jwt"));
                         }
                         catch (Exception ex)
                         {
@@ -57,18 +59,21 @@ namespace Wire.Jwt
 
                 if (mode.HasFlag(JwtMode.Session))
                 {
-                    TokenValidationModel identityToken = x.HttpContext.Session.Get<TokenValidationModel>("IdentityToken");
+                    Cookie identityToken = x.Request.Cookies.FirstOrDefault(x => x.Name == "IdentityToken"); // .Session.Get<TokenValidationModel>("IdentityToken");
                     if (identityToken != null)
                     {
-                        JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(identityToken.Token);
+                        string token = identityToken.Value;
+                        try {  }
+                        catch { }
+                        JsonWebToken.TokenInformation tokenInfo = JsonWebToken.DecodeToken(token);
                         List<Claim> claims = tokenInfo.Claims.Select(c => new Claim(c.Key, c.Value.ToString())).ToList();
-                        x.HttpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
+                        x.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "jwt"));
                     }
                 }
             });
             API.GET("/token/validate", x =>
             {
-                return x.HttpContext.User.Identity.IsAuthenticated;
+                return x.User?.Identity?.IsAuthenticated ?? false;
             });
         }
     }
