@@ -19,11 +19,14 @@ Wire Supports all the standard http requests, GET, POST, PUT, DELETE, OPTIONS, P
 ```cs
 using Wire;
 
-var server = new WireHTTPServer(80);
+// Start the server
+var server = new WireHTTPServer();
+
+// Sample API endpoint
 API.GET("/info/{message}", x => new { Message = x.Parameters.message });
 
-Console.ReadLine();
-server.Stop();
+// Wait for key press to terminate program
+server.Wait();
 ```
 so in the example of http://localhost/info/OK
 would return a json reponse as { Message: "OK" }
