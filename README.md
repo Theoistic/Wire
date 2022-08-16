@@ -1,7 +1,6 @@
 # Wire <img src="https://raw.githubusercontent.com/SperoSophia/Wire/master/icon.png" width="24"> 
 
-
-[![Build status](https://ci.appveyor.com/api/projects/status/2e55pfc8xbehpg33?svg=true)](https://ci.appveyor.com/project/SperoSophia/wire)
+[![Build](https://github.com/theoistic/wire/actions/workflows/build.yml/badge.svg)](https://github.com/theoistic/wire/actions/workflows/build.yml)
 [![nuget](https://img.shields.io/nuget/v/Wire.NET.svg)](https://www.nuget.org/packages/Wire.NET/)
 
 Wire is a quick, easy & extremely light-weight WebAPI framework. As an alternative to ASP.NET MVC, NancyFx, Nina, Sinatra and others. .NET based ofc.
@@ -59,3 +58,26 @@ for(int i = 0; i < 10; i++) {
 
 API bindings can be replaced runtime as well, so if something is mapped to /hello and you map another function to an existing mapping its replaced.
 
+
+## Experimental
+
+Experimental implimentation of an ASP.NET middleware
+
+```cs
+using Wire;
+using Wire.ASPNET;
+
+var builder = WebApplication.CreateBuilder(args);
+var app = builder.Build();
+
+// Attach the Wire ASP.NET middleware
+app.UseWire();
+
+// Declare an Endpoint
+API.GET("/", x =>
+{
+    return new { Message = "Hello World" };
+});
+
+app.Run();
+```
