@@ -16,7 +16,7 @@ namespace Wire
         public void PATCH(string path, WireAction body, WireCondition condition = null) => API.PATCH(path, body, condition);
 
         // Request Pre-Post Handling
-        public void BeforeRequest(Action<Context> body) => API.BeforeRequest(body);
-        public void AfterRequest(Action<Context> body) => API.AfterRequest(body);
+        public void BeforeRequest(Action<IContext> body) => API.BeforeRequest(body);
+        public void AfterRequest(Action<IContext> body) => API.AfterRequest(body);
     }
 }

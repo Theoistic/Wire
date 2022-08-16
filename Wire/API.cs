@@ -46,8 +46,8 @@ namespace Wire
         }
     }
 
-    public delegate bool WireCondition(Context context);
-    public delegate object WireAction(Context contxt);
+    public delegate bool WireCondition(IContext context);
+    public delegate object WireAction(IContext contxt);
 
     public delegate void HttpRequest(string path, WireAction body, WireCondition condition = null);
 
@@ -71,7 +71,7 @@ namespace Wire
         public static void OPTIONS(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.OPTIONS].Add(path, body, condition);
         public static void PATCH(string path, WireAction body, WireCondition condition = null) => Behaviours[HttpMethod.PATCH].Add(path, body, condition);
 
-        public static Context FromHttpListener(HttpListenerContext httpListenerContext)
+        public static IContext FromHttpListener(HttpListenerContext httpListenerContext)
         {
             var context = new Context { HttpContext = httpListenerContext };
             var request = httpListenerContext.Request;
@@ -89,7 +89,7 @@ namespace Wire
         {
             beforeRequest.Add((context) =>
             {
-                Uri uri = context.HttpContext.Request.Url;
+                Uri uri = context.URL;
                 UriTemplate tmpl = new UriTemplate(path);
                 if(tmpl.GetParameters(uri) != null)
                 {
@@ -114,16 +114,16 @@ namespace Wire
         //public static object Call(HttpMethod method, string path, Context context) => Behaviours[method].FindMatch(new Uri($"{context.HttpContext.Request.Scheme}://{context.HttpContext.Request.Host}{path}")).Function(context);
 
 
-        internal static List<Action<Context>> beforeRequest = new List<Action<Context>>();
-        internal static List<Action<Context>> afterRequest = new List<Action<Context>>();
+        internal static List<Action<IContext>> beforeRequest = new List<Action<IContext>>();
+        internal static List<Action<IContext>> afterRequest = new List<Action<IContext>>();
 
-        public static void BeforeRequest(Action<Context> body) => beforeRequest.Add(body);
-        public static void AfterRequest(Action<Context> body) => afterRequest.Add(body);
+        public static void BeforeRequest(Action<IContext> body) => beforeRequest.Add(body);
+        public static void AfterRequest(Action<IContext> body) => afterRequest.Add(body);
 
-        public static Uri GetURI(Context context) => context.HttpContext.Request.Url;
-        public static APIBehaviour Match(Context context) => Behaviours[context.HttpContext.Request.HttpMethod.ToUpper().GetHttpMethod()].FindMatch(GetURI(context));
+        public static Uri GetURI(IContext context) => context.URL;
+        public static APIBehaviour Match(IContext context) => Behaviours[context.HttpMethod].FindMatch(GetURI(context));
 
-        public static async Task<bool> Resolve(Context context)
+        public static async Task<bool> Resolve(IContext context)
         {
             APIBehaviour behaviour = API.Match(context);
             if (behaviour != null)

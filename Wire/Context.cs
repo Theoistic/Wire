@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
@@ -9,17 +10,58 @@ using System.Text.Json;
 
 namespace Wire
 {
-    public class Context
+
+    public interface IContext
     {
+        HttpMethod HttpMethod { get; }
+        Uri URL { get; }
+        dynamic Parameters { get; } 
+        IDictionary<string, string> QueryString { get; }
+        ContextBody Body { get; set; }
+        IPrincipal? User { get; set; }
+        NameValueCollection RequestHeaders { get; }
+        CookieCollection RequestCookies { get; }
+        Stream RequestStream { get; }
+        Stream ResponseStream { get; }
+        CookieCollection ResponseCookies { get; }
+        void WriteToResponse(string ContentType, byte[] data = null);
+    }
+
+    public class Context : IContext
+    {
+        public HttpMethod HttpMethod => HttpContext.Request.HttpMethod.ToUpper().GetHttpMethod();
+        public Uri URL => HttpContext.Request.Url;
+
         public dynamic Parameters { get; internal set; } = new ExpandoObject();
         public IDictionary<string, string> QueryString => HttpContext.Request.QueryString.ParseQueryString();
-        public HttpListenerContext HttpContext { get; set; }
+        internal HttpListenerContext HttpContext { get; set; }
         public ContextBody Body { get; set; }
-
+        
         public IPrincipal? User { get; set; }
 
-        public HttpListenerRequest Request => HttpContext.Request;
-        public HttpListenerResponse Response => HttpContext.Response;
+        public NameValueCollection RequestHeaders => HttpContext.Request.Headers;
+        public CookieCollection RequestCookies => HttpContext.Request.Cookies;
+        public Stream RequestStream => HttpContext.Request.InputStream;
+
+
+        public Stream ResponseStream => HttpContext.Response.OutputStream;
+        public CookieCollection ResponseCookies => HttpContext.Response.Cookies;
+
+        public void WriteToResponse(string ContentType, byte[] data = null)
+        {
+            SetContentType(ContentType);
+            if (data != null)
+                HttpContext.Response.OutputStream.Write(data, 0, data.Length);
+        }
+
+        public void SetContentType(string ContentType)
+        {
+            HttpContext.Response.ContentType = ContentType;
+            HttpContext.Response.StatusCode = (int)HttpStatusCode.OK;
+        }
+
+        /*private HttpListenerRequest Request => HttpContext.Request;
+        private HttpListenerResponse Response => HttpContext.Response;*/
     }
 
     public class ContextBody

@@ -36,23 +36,12 @@ namespace Wire.ASPNET
         {
             WireMiddleware.services = services;
             WireMiddleware.services.AddDistributedMemoryCache();
-            //WireMiddleware.services.AddSession();
             return WireMiddleware.services;
         }
 
-        public static IApplicationBuilder UseWire(this IApplicationBuilder builder, IHostingEnvironment env, bool registerModules = true)
+        public static IApplicationBuilder UseWire(this IApplicationBuilder builder)
         {
             WireMiddleware.builder = builder;
-            //API.env = env;
-
-            //builder.ApplicationServices.GetService<IServiceCollection>().AddSession();
-            //WireMiddleware.services.AddSession();
-            //WireMiddleware.builder.UseSession();
-
-            if (registerModules)
-            {
-                RegisterAPIModules();
-            }
             return WireMiddleware.builder.UseMiddleware<WireMiddleware>();
         }
 
@@ -69,14 +58,6 @@ namespace Wire.ASPNET
                     types.AddUnique(asm.GetAllTypesWithAttribute<APIModuleAttribute>());
                 }
             }
-            /*List<Assembly> moduleAssemblies = Utils.GetModuleAssemblies();
-            if (moduleAssemblies != null)
-            {
-                foreach (var modAsm in moduleAssemblies)
-                {
-                    types.AddUnique(modAsm.GetAllTypesWithAttribute<APIModuleAttribute>());
-                }
-            }*/
             moduleInstances = new List<object>();
             foreach (Type t in types)
             {
@@ -84,22 +65,19 @@ namespace Wire.ASPNET
             }
         }
     }
-
-    public static partial class API
+    
+    internal static partial class API
     {
         public static async Task<bool> Resolve(HttpContext context)
         {
 
-            Context wireContext = new Context
-            {
-
-            };
+            IContext wireContext = FromHttpContext(context);
             return await Wire.API.Resolve(wireContext);
         }
-
-        public static Context FromHttpContext(HttpContext context)
+        
+        public static IContext FromHttpContext(HttpContext context)
         {
-            Context wireContext = new Context
+            WireASPNETContext wireContext = new WireASPNETContext(context)
             {
                 
             };

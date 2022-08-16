@@ -31,7 +31,7 @@ namespace Wire.Jwt
 
                 if (mode.HasFlag(JwtMode.Session))
                 {
-                    x.Response.Cookies.Add(new System.Net.Cookie("IdentityToken", token.Token));
+                    x.ResponseCookies.Add(new System.Net.Cookie("IdentityToken", token.Token)); 
                 }
 
                 return token;
@@ -39,7 +39,7 @@ namespace Wire.Jwt
             API.BeforeRequest(x =>
             {
                 if (mode.HasFlag(JwtMode.Header)) {
-                    string? Authorization = x.Request.Headers.Get("Authorization");
+                    string? Authorization = x.RequestHeaders.Get("Authorization");
                     if (!string.IsNullOrEmpty(Authorization))
                     {
                         try
@@ -59,7 +59,7 @@ namespace Wire.Jwt
 
                 if (mode.HasFlag(JwtMode.Session))
                 {
-                    Cookie identityToken = x.Request.Cookies.FirstOrDefault(x => x.Name == "IdentityToken"); // .Session.Get<TokenValidationModel>("IdentityToken");
+                    Cookie identityToken = x.RequestCookies.FirstOrDefault(x => x.Name == "IdentityToken"); // .Session.Get<TokenValidationModel>("IdentityToken");
                     if (identityToken != null)
                     {
                         string token = identityToken.Value;

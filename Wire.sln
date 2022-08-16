@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wire.ASPNET", "Wire.ASPNET\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wire.Tests.Console", "Wire.Tests.Console\Wire.Tests.Console.csproj", "{F48DADDD-1515-436C-A396-268328E4519B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wire.ASPNET.Tests", "Wire.ASPNET.Tests\Wire.ASPNET.Tests.csproj", "{F910C0F9-38C4-4033-8BFF-EC26A57A2687}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{F48DADDD-1515-436C-A396-268328E4519B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F48DADDD-1515-436C-A396-268328E4519B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F48DADDD-1515-436C-A396-268328E4519B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F910C0F9-38C4-4033-8BFF-EC26A57A2687}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F910C0F9-38C4-4033-8BFF-EC26A57A2687}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F910C0F9-38C4-4033-8BFF-EC26A57A2687}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F910C0F9-38C4-4033-8BFF-EC26A57A2687}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

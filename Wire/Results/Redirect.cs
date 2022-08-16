@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Wire
 {
-    public class Redirect : BaseResult
+    /*public class Redirect : BaseResult
     {
         public override bool IsExecutionReady => true;
         public string path { get; private set; }
@@ -25,5 +25,5 @@ namespace Wire
                 context.Response.Redirect(path);
             }
         }
-    }
+    }*/
 }

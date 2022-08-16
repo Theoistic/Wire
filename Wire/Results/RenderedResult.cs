@@ -10,17 +10,17 @@ namespace Wire
         private MemoryStream _cachedSerializedResult;
         protected abstract void Render(Stream s, T t);
         
-        public override void Execute(Context context)
+        public override void Execute(IContext context)
         {
-            var response = context.Response;
-            response.ContentType = _contentType;
+            /*var response = context.Response;
+            response.ContentType = _contentType;*/
             if (_cachedSerializedResult != null)
             {
                 throw new NotImplementedException();
             }
             else
             {
-                Render(response.OutputStream, _result);
+                Render(context.ResponseStream, _result);
             }
         }
 

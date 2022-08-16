@@ -5,7 +5,7 @@ namespace Wire
     public abstract class BaseResult
     {
         protected NameValueCollection ResultHeaders;
-        public abstract void Execute(Context context);
+        public abstract void Execute(IContext context);
         public abstract bool IsExecutionReady { get; }
     }
 }

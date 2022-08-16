@@ -32,16 +32,15 @@ namespace Wire
             return System.IO.File.ReadAllBytes(System.IO.Path.Combine(API.env.WebRootPath, filename));
         }*/
 
-        public override void Execute(Context context)
+        public override void Execute(IContext context)
         {
-            context.Response.ContentType = _contentType;
             if (_cachedSerializedResult != null)
             {
                 throw new NotImplementedException();
             }
             else
             {
-                context.Response.OutputStream.Write(_data, 0, _data.Length);
+                context.WriteToResponse(_contentType, _data);
             }
         }
 

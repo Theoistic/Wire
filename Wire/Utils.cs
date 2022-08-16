@@ -17,23 +17,22 @@ namespace Wire
             return (HttpMethod)Enum.Parse(typeof(HttpMethod), self);
         }
 
-        public static string GetJsonBody(this Context self)
+        public static string GetJsonBody(this IContext self)
         {
             var bodyStr = "";
-            var req = self.Request;
 
             // Allows using several time the stream in ASP.Net Core
             //req.EnableRewind();
 
             // Arguments: Stream, Encoding, detect encoding, buffer size 
             // AND, the most important: keep stream opened
-            using (StreamReader reader = new StreamReader(req.InputStream, Encoding.UTF8, true, 1024, true))
+            using (StreamReader reader = new StreamReader(self.RequestStream, Encoding.UTF8, true, 1024, true))
             {
                 bodyStr = reader.ReadToEnd();
             }
 
             // Rewind, so the core is not lost when it looks the body for the request
-            req.InputStream.Position = 0;
+            self.RequestStream.Position = 0;
 
             return bodyStr;
         }
@@ -55,6 +54,18 @@ namespace Wire
                     self.Add(item);
                 }
             }
+        }
+
+        public static Dictionary<string, string> ParseQueryString(this string self)
+        {
+            var queryString = new Dictionary<string, string>();
+            var query = self.Split('&');
+            foreach (var item in query)
+            {
+                var keyValue = item.Split('=');
+                queryString.Add(keyValue[0], keyValue[1]);
+            }
+            return queryString;
         }
 
         public static Dictionary<string, string> ParseQueryString(this NameValueCollection requestQueryString)
